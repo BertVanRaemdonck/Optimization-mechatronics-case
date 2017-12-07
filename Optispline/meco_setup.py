@@ -1,0 +1,1 @@
+meco_binaries(casadi='3.3.0-rc1');import casadi;casadi.SX.sym('x')
