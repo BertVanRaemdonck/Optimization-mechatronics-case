@@ -1,0 +1,36 @@
+Een nieuwe git repo maken:
+1. Browse naar de map waar de repo moet komen
+2. 	git init
+
+Remote zetten
+1. 	git remote add origin #URL#
+2.	git remote add upstream #URL#
+3.	git remote -v	(om te controleren)
+
+Bestanden binnenhalen van remote
+1. 	git fetch upstream
+2.	git merge upstream/master
+* Hard reset van een specifieke file
+3. 	git checkout HEAD -- #bestandsnaam#	(check de volledige naam bij de foutmelding erboven)
+
+Aanpassingen committen
+* wanneer je slechts specifieke files will committen
+1. 	git add #Bestandsnaam#
+2.	git commit -m "#Commit message#"
+* wanneer je alles wilt committen
+1.	git commit -a -m "#Commit message#"
+* wanneer je alle nieuwe bestanden wil committen
+1.	git add -a
+2. 	git commit -a -m "#Commit message#"
+
+Bestanden naar de remote sturen
+* de eerste keer je dit doet voor een repo
+0.	git push --set-upstream origin master
+* alle andere keren
+1.	git push
+2. Gebruikersnaam en wachtwoord ingeven
+
+Veranderingen bekijken
+*	git status	(kijken welke bestanden er aangepast zijn sinds de laatste commit)
+*	git diff	(kijken wat er allemaal is aangepast in de bestanden sinds de laatste commit) (pijltjes om te navigeren, "q" om te sluiten)
+*	ls		(lijst van alle bestanden in de repo)
