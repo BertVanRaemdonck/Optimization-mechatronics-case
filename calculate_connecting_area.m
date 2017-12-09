@@ -23,12 +23,12 @@ function area = calculate_connecting_area(points, X)
     end
 
     nb_points = size(points,2);
-    area = 0;
+    area = zeros(1, size(X,2));
     
     for i=1:nb_points
         point_1 = points(:,i);
         point_2 = points(:,mod(i,nb_points)+1); % always gives the next point in the list, except for when i is the lest element in the list: then it returns the first one
-        area = area + .5 * abs(det([point_1 point_2 X ; 1 1 1]));
+        area = area + .5 * abs((X(1,:)-point_2(1)).*(point_1(2)-X(2,:)) - (X(1,:)-point_1(1)).*(point_2(2)-X(2,:)));
     end
     
 end
