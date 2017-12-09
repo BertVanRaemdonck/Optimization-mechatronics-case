@@ -65,7 +65,7 @@ opti.subject_to(v_min <= dx <= v_max);
 opti.subject_to(v_min <= dy <= v_max);
 opti.subject_to(F_min <= m*ddx <= F_max);
 opti.subject_to(F_min <= m*ddy <= F_max);
-opti.subject_to(calculate_connecting_area(obs_points,[x';y']) > 1.0001*obs_area);
+opti.subject_to(calculate_connecting_area(obs_points,[x';y']) - obs_area > 0);  % evaluation of a-b > 0 seems to be more accurate than a > b !
 opti.subject_to(T >= 0);
 
 opti.subject_to({x(1)==x_init(1), x(end)==x_final(1), y(1)==x_init(2), y(end)==x_final(2)});
