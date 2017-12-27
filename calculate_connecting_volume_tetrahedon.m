@@ -28,7 +28,7 @@ function volume = calculate_connecting_volume_tetrahedon(points, X)
     else
         
 %         nb_points = 4;
-        volume = zeros(1, size(X,2));
+        volume = zeros(1, 1);
         
         volume = volume + abs(dot(a_point-X, ...
                                 (cross(b_point-X,c_point-X))))/6;

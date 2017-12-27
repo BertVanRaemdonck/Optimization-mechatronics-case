@@ -2,6 +2,15 @@ clear all;
 close all;
 clc;
 
+%% Setting up experiment
+
+case_small = false;
+case_big = true;
+
+case_sphere = true;
+case_tetrahedron = true;
+case_cube = false;              % does not work for the moment
+
 import casadi.*
 
 T = 1;   % End time
@@ -16,8 +25,15 @@ meas_pos = [t;0.1*t.*sin(4*pi*t);0.1*t.*cos(4*pi*t)];
 
 %% Building obstacle
 % building cube
-obs1_anker = [0.5,0.75,0.5];
-obs1_side = 0.4;
+if case_big
+    obs1_anker = [0.5,0.75,0.5];
+    obs1_side = 0.4;
+end
+
+if case_small
+    obs1_anker = [0.5,0.75,0.5];
+    obs1_side = 0.25;
+end
 number_obs_points = 8;
 
 obs1_points = zeros(number_obs_points,3);
@@ -46,59 +62,66 @@ end
 
 % plotting the cube for testing
 
-        % plotcube(obs1_anker,[obs1_side,obs1_side,obs1_side] ,.8,[1 0 0]);       % anker, size sides, transparancy, colour in rgb
-% enlarging obs1_points for plotting
-obs1_points(9:16,:) = obs1_points(1:8,:);
-        
-figure();
-for index = 1: number_obs_points
-    a=1;
-    index_numbers = [index,index+a];
-    plot3(obs1_points(index_numbers,1),obs1_points(index_numbers,2),obs1_points(index_numbers,3),'b');
-    hold on
-    
-    b = 2;
-    index_numbers = [index,index+b];
-    plot3(obs1_points(index_numbers,1),obs1_points(index_numbers,2),obs1_points(index_numbers,3),'b');
+if case_cube        
+    % enlarging obs1_points for plotting
+    obs1_points(9:16,:) = obs1_points(1:8,:);
 
-    c = 4;
-    index_numbers = [index,index+c];
-    plot3(obs1_points(index_numbers,1),obs1_points(index_numbers,2),obs1_points(index_numbers,3),'b');
-    
-    d = 5;
-    index_numbers = [index,index+d];
-    plot3(obs1_points(index_numbers,1),obs1_points(index_numbers,2),obs1_points(index_numbers,3),'b');
+    figure();
+    for index = 1: number_obs_points
+        a=1;
+        index_numbers = [index,index+a];
+        plot3(obs1_points(index_numbers,1),obs1_points(index_numbers,2),obs1_points(index_numbers,3),'b');
+        hold on
+
+        b = 2;
+        index_numbers = [index,index+b];
+        plot3(obs1_points(index_numbers,1),obs1_points(index_numbers,2),obs1_points(index_numbers,3),'b');
+
+        c = 4;
+        index_numbers = [index,index+c];
+        plot3(obs1_points(index_numbers,1),obs1_points(index_numbers,2),obs1_points(index_numbers,3),'b');
+
+        d = 5;
+        index_numbers = [index,index+d];
+        plot3(obs1_points(index_numbers,1),obs1_points(index_numbers,2),obs1_points(index_numbers,3),'b');
+    end
+    hold off
+    xlabel('x')
+    ylabel('y')
+    zlabel('z')
+
 end
-hold off
-xlabel('x')
-ylabel('y')
-zlabel('z')
 
 % building tetrahedon
 
-obs_tetrahedron = [obs1_points(1:3,:);
-                    obs1_points(5,:)];
-                
-% obs_tetrahedron = [obs1_points(4,:);
-%                     obs1_points(6:8,:)];
-                
-volume_tetrahedron = calculate_connecting_volume_tetrahedon(obs_tetrahedron);
+if case_tetrahedron
+    obs_tetrahedron = [obs1_points(1:3,:);
+                        obs1_points(5,:)];
 
-% plotting tetrahedron
-figure()
-plot3(obs_tetrahedron(:,1),obs_tetrahedron(:,2),obs_tetrahedron(:,3),'b');
-hold on
-plot3(obs_tetrahedron([1,3],1),obs_tetrahedron([1,3],2),obs_tetrahedron([1,3],3),'b');
-plot3(obs_tetrahedron([1,4],1),obs_tetrahedron([1,4],2),obs_tetrahedron([1,4],3),'b');
-plot3(obs_tetrahedron([2,4],1),obs_tetrahedron([2,4],2),obs_tetrahedron([2,4],3),'b');
-xlabel('x')
-ylabel('y')
-zlabel('z')
+    % obs_tetrahedron = [obs1_points(4,:);
+    %                     obs1_points(6:8,:)];
 
+    volume_tetrahedron = calculate_connecting_volume_tetrahedon(obs_tetrahedron);
 
-% building sphere
-obs_sphere_center = [0.5;0.75;0.5];
-obs_sphere_radius = 0.4;
+    % plotting tetrahedron
+    figure()
+    plot3(obs_tetrahedron(:,1),obs_tetrahedron(:,2),obs_tetrahedron(:,3),'b');
+    hold on
+    plot3(obs_tetrahedron([1,3],1),obs_tetrahedron([1,3],2),obs_tetrahedron([1,3],3),'b');
+    plot3(obs_tetrahedron([1,4],1),obs_tetrahedron([1,4],2),obs_tetrahedron([1,4],3),'b');
+    plot3(obs_tetrahedron([2,4],1),obs_tetrahedron([2,4],2),obs_tetrahedron([2,4],3),'b');
+    xlabel('x')
+    ylabel('y')
+    zlabel('z')
+
+end
+
+if case_sphere
+    % building sphere
+    obs_sphere_center = [0.5;0.75;0.5];
+    obs_sphere_radius = 0.4;
+
+end
 %% Building casadi problem
 
 
@@ -160,10 +183,14 @@ for k=1:N
     opti.subject_to(Xk_end==X{k+1});
     
     % obstacle avoidance constraint
-    opti.subject_to(norm(p{k}-obs_sphere_center,2) > obs_sphere_radius);
+    if case_sphere
+        opti.subject_to(norm(p{k}-obs_sphere_center,2) > obs_sphere_radius);
+    end
     
-    volume_subject = calculate_connecting_volume_tetrahedon(obs_tetrahedron,p{k}');
-    opti.subject_to(volume_subject - volume_tetrahedron > 0);
+    if case_tetrahedron
+        volume_subject = calculate_connecting_volume_tetrahedon(obs_tetrahedron,p{k}');
+        opti.subject_to(volume_subject - volume_tetrahedron > 0);
+    end
     % opti.subject_to((x(index)-obs_pos_moving(index,1)).^2 + (y(index)-obs_pos_moving(index,2)).^2 >= obs_rad_moving^2);
     
 end
@@ -199,36 +226,52 @@ plot3(P_start(1),P_start(2),P_start(3),'kx')
 plot3(P_end(1),P_end(2),P_end(3),'ks')
 axis equal
 
-% for index = 1: number_obs_points
-%     a=1;
-%     index_numbers = [index,index+a];
-%     plot3(obs1_points(index_numbers,1),obs1_points(index_numbers,2),obs1_points(index_numbers,3),'b');
-%     hold on
-%     
-%     b = 2;
-%     index_numbers = [index,index+b];
-%     plot3(obs1_points(index_numbers,1),obs1_points(index_numbers,2),obs1_points(index_numbers,3),'b');
-% 
-%     c = 4;
-%     index_numbers = [index,index+c];
-%     plot3(obs1_points(index_numbers,1),obs1_points(index_numbers,2),obs1_points(index_numbers,3),'b');
-% end
+if case_cube        
+    for index = 1: number_obs_points
+        a=1;
+        index_numbers = [index,index+a];
+        plot3(obs1_points(index_numbers,1),obs1_points(index_numbers,2),obs1_points(index_numbers,3),'b');
+        hold on
+
+        b = 2;
+        index_numbers = [index,index+b];
+        plot3(obs1_points(index_numbers,1),obs1_points(index_numbers,2),obs1_points(index_numbers,3),'b');
+
+        c = 4;
+        index_numbers = [index,index+c];
+        plot3(obs1_points(index_numbers,1),obs1_points(index_numbers,2),obs1_points(index_numbers,3),'b');
+
+        d = 5;
+        index_numbers = [index,index+d];
+        plot3(obs1_points(index_numbers,1),obs1_points(index_numbers,2),obs1_points(index_numbers,3),'b');
+    end
+    hold off
+    xlabel('x')
+    ylabel('y')
+    zlabel('z')
+
+end
 
 % plotting sphere
-[X_sphere,Y_sphere,Z_sphere] = sphere;
-surf(obs_sphere_radius*X_sphere + obs_sphere_center(1,1), ...
-    obs_sphere_radius*Y_sphere + obs_sphere_center(2,1),...
-    obs_sphere_radius*Z_sphere + obs_sphere_center(3,1));
 
-% plotting tetrahedron
-plot3(obs_tetrahedron(:,1),obs_tetrahedron(:,2),obs_tetrahedron(:,3),'b');
-plot3(obs_tetrahedron([1,3],1),obs_tetrahedron([1,3],2),obs_tetrahedron([1,3],3),'b');
-plot3(obs_tetrahedron([1,4],1),obs_tetrahedron([1,4],2),obs_tetrahedron([1,4],3),'b');
-plot3(obs_tetrahedron([2,4],1),obs_tetrahedron([2,4],2),obs_tetrahedron([2,4],3),'b');
+if case_sphere
+    [X_sphere,Y_sphere,Z_sphere] = sphere;
+    surf(obs_sphere_radius*X_sphere + obs_sphere_center(1,1), ...
+        obs_sphere_radius*Y_sphere + obs_sphere_center(2,1),...
+        obs_sphere_radius*Z_sphere + obs_sphere_center(3,1));
+end
 
-xlabel('x')
-ylabel('y')
-zlabel('z')
+if case_tetrahedron
+    % plotting tetrahedron
+    plot3(obs_tetrahedron(:,1),obs_tetrahedron(:,2),obs_tetrahedron(:,3),'b');
+    plot3(obs_tetrahedron([1,3],1),obs_tetrahedron([1,3],2),obs_tetrahedron([1,3],3),'b');
+    plot3(obs_tetrahedron([1,4],1),obs_tetrahedron([1,4],2),obs_tetrahedron([1,4],3),'b');
+    plot3(obs_tetrahedron([2,4],1),obs_tetrahedron([2,4],2),obs_tetrahedron([2,4],3),'b');
+
+    xlabel('x')
+    ylabel('y')
+    zlabel('z')
+end
 
 
 view([-76 14])
