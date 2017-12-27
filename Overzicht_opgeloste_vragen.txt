@@ -1,0 +1,20 @@
+OVERZICHT OPGELOSTE VRAGEN:
+___________________________
+
+
+- a2_huber_norm  (2 punten)
+	- 26/12/2017: opgelost, maar vereist nog nazicht + aanpassingen voor presentatie
+
+- b1_moving_obstacel_avoidance (2 punten)
+	- ../12/2017: opgelost, maar vereist nog nazicht + aanpassingen voor presentatie
+
+- b2a_convex_obstacle_multiple_shooting (2 punten)
+	- 26/12/2017: nagekeken, maar opgemerkt dat traject door object gaat (maar gevonden posities niet)
+	- ../12/2017: opgelost
+
+- b3_aerodynamic_drag (1 punt)
+	- ../12/2017: opgelost, maar vereist nog nazicht + aanpassingen voor presentatie
+
+- c8_2D_invariants_from_images (3 punten)
+	- 26/12/2017: nagekeken, maar zou graag de afleiding eens bezien
+	- ../12/2017: opgelost

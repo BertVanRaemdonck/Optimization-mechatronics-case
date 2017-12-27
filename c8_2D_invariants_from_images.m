@@ -13,6 +13,8 @@ data = cast(red_UINT8, 'double');
 
 fig = figure();
 
+filename = 'animation_c8.gif';          % added to create a gif
+
 x0 = n_col/2;
 y0 = n_row/2;
 
@@ -38,6 +40,22 @@ for i = 1:loops
     plot(list_x, list_y, '+b');
     plot(list_x, list_y, 'b');
     hold off
+    
+    % put figure in the .gif file
+    
+    frame = getframe(fig);
+    image_gif = frame2im(frame);
+    [imind, cm] = rgb2ind(image_gif,256);
+    
+    if i==1;
+        imwrite(imind, cm, filename, 'gif', 'Loopcount', inf, 'DelayTime', 0.05);
+    else
+        imwrite(imind, cm, filename, 'gif', 'WriteMode', 'append', 'DelayTime', 0.05);
+        
+    end
+    
+    % draw the figure now
+    
     drawnow
 
     x0 = x_;
@@ -145,3 +163,5 @@ figure
 plot(sol.value(U)')
 
 U_sol = sol.value(U);
+
+
