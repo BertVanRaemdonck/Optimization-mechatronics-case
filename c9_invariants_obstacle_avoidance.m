@@ -17,7 +17,7 @@ meas_pos = [t;0.1*t.*sin(4*pi*t);0.1*t.*cos(4*pi*t)];
 %% Building obstacle
 % building cube
 obs1_anker = [0.5,0.75,0.5];
-obs1_side = 0.25;
+obs1_side = 0.4;
 number_obs_points = 8;
 
 obs1_points = zeros(number_obs_points,3);
@@ -78,6 +78,9 @@ zlabel('z')
 
 obs_tetrahedron = [obs1_points(1:3,:);
                     obs1_points(5,:)];
+                
+% obs_tetrahedron = [obs1_points(4,:);
+%                     obs1_points(6:8,:)];
                 
 volume_tetrahedron = calculate_connecting_volume_tetrahedon(obs_tetrahedron);
 
@@ -158,6 +161,7 @@ for k=1:N
     
     % obstacle avoidance constraint
     opti.subject_to(norm(p{k}-obs_sphere_center,2) > obs_sphere_radius);
+    
     volume_subject = calculate_connecting_volume_tetrahedon(obs_tetrahedron,p{k}');
     opti.subject_to(volume_subject - volume_tetrahedron > 0);
     % opti.subject_to((x(index)-obs_pos_moving(index,1)).^2 + (y(index)-obs_pos_moving(index,2)).^2 >= obs_rad_moving^2);

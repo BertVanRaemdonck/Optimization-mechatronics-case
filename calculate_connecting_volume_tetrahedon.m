@@ -29,19 +29,30 @@ function volume = calculate_connecting_volume_tetrahedon(points, X)
         
 %         nb_points = 4;
         volume = zeros(1, size(X,2));
+        
+        volume = volume + abs(dot(a_point-X, ...
+                                (cross(b_point-X,c_point-X))))/6;
+        volume = volume + abs(dot(a_point-X, ...
+                                (cross(b_point-X,d_point-X))))/6;  
+        volume = volume + abs(dot(a_point-X, ...
+                                (cross(c_point-X,d_point-X))))/6;
+        volume = volume + abs(dot(b_point-X, ...
+                                (cross(c_point-X,d_point-X))))/6;        
 
-        volume = volume + abs(det([a_point-X;
-                        b_point-X;
-                        c_point-X]))/6;
-        volume = volume + abs(det([a_point-X;
-                        b_point-X;
-                        d_point-X]))/6;
-        volume = volume + abs(det([a_point-X;
-                        c_point-X;
-                        d_point-X]))/6;
-        volume = volume + abs(det([b_point-X;
-                        c_point-X;
-                        d_point-X]))/6;
+%         volume = volume + abs(det([a_point-X;
+%                         b_point-X;
+%                         c_point-X]))/6;
+%         volume = volume + abs(det([a_point-X;
+%                         b_point-X;
+%                         d_point-X]))/6;
+%         volume = volume + abs(det([a_point-X;
+%                         c_point-X;
+%                         d_point-X]))/6;
+%         volume = volume + abs(det([b_point-X;
+%                         c_point-X;
+%                         d_point-X]))/6;
+                    
+                    
 %         for i=1:nb_points
 %             point_1 = points(:,i);
 %             point_2 = points(:,mod(i,nb_points)+1); % always gives the next point in the list, except for when i is the lest element in the list: then it returns the first one
