@@ -48,7 +48,7 @@ end
 
         % plotcube(obs1_anker,[obs1_side,obs1_side,obs1_side] ,.8,[1 0 0]);       % anker, size sides, transparancy, colour in rgb
 % enlarging obs1_points for plotting
-obs1_points(9:12,:) = obs1_points(1:4,:);
+obs1_points(9:16,:) = obs1_points(1:8,:);
         
 figure();
 for index = 1: number_obs_points
@@ -64,8 +64,30 @@ for index = 1: number_obs_points
     c = 4;
     index_numbers = [index,index+c];
     plot3(obs1_points(index_numbers,1),obs1_points(index_numbers,2),obs1_points(index_numbers,3),'b');
+    
+    d = 5;
+    index_numbers = [index,index+d];
+    plot3(obs1_points(index_numbers,1),obs1_points(index_numbers,2),obs1_points(index_numbers,3),'b');
 end
 hold off
+xlabel('x')
+ylabel('y')
+zlabel('z')
+
+% building tetrahedon
+
+obs_tetrahedron = [obs1_points(1:3,:);
+                    obs1_points(5,:)];
+                
+volume_tetrahedron = calculate_connecting_volume_tetrahedon(obs_tetrahedron);
+
+% plotting tetrahedron
+figure()
+plot3(obs_tetrahedron(:,1),obs_tetrahedron(:,2),obs_tetrahedron(:,3),'b');
+hold on
+plot3(obs_tetrahedron([1,3],1),obs_tetrahedron([1,3],2),obs_tetrahedron([1,3],3),'b');
+plot3(obs_tetrahedron([1,4],1),obs_tetrahedron([1,4],2),obs_tetrahedron([1,4],3),'b');
+plot3(obs_tetrahedron([2,4],1),obs_tetrahedron([2,4],2),obs_tetrahedron([2,4],3),'b');
 xlabel('x')
 ylabel('y')
 zlabel('z')
@@ -136,6 +158,8 @@ for k=1:N
     
     % obstacle avoidance constraint
     opti.subject_to(norm(p{k}-obs_sphere_center,2) > obs_sphere_radius);
+    volume_subject = calculate_connecting_volume_tetrahedon(obs_tetrahedron,p{k}');
+    opti.subject_to(volume_subject - volume_tetrahedron > 0);
     % opti.subject_to((x(index)-obs_pos_moving(index,1)).^2 + (y(index)-obs_pos_moving(index,2)).^2 >= obs_rad_moving^2);
     
 end
@@ -186,10 +210,18 @@ axis equal
 %     plot3(obs1_points(index_numbers,1),obs1_points(index_numbers,2),obs1_points(index_numbers,3),'b');
 % end
 
+% plotting sphere
 [X_sphere,Y_sphere,Z_sphere] = sphere;
 surf(obs_sphere_radius*X_sphere + obs_sphere_center(1,1), ...
     obs_sphere_radius*Y_sphere + obs_sphere_center(2,1),...
     obs_sphere_radius*Z_sphere + obs_sphere_center(3,1));
+
+% plotting tetrahedron
+plot3(obs_tetrahedron(:,1),obs_tetrahedron(:,2),obs_tetrahedron(:,3),'b');
+plot3(obs_tetrahedron([1,3],1),obs_tetrahedron([1,3],2),obs_tetrahedron([1,3],3),'b');
+plot3(obs_tetrahedron([1,4],1),obs_tetrahedron([1,4],2),obs_tetrahedron([1,4],3),'b');
+plot3(obs_tetrahedron([2,4],1),obs_tetrahedron([2,4],2),obs_tetrahedron([2,4],3),'b');
+
 xlabel('x')
 ylabel('y')
 zlabel('z')
