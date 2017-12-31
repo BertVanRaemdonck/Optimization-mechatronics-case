@@ -103,10 +103,30 @@ for k=1:N+1
     p{k} = opti.variable(2,1); % object position
     Rt{k}  = opti.variable(2,2); % translational Frenet-Serret frame
     
+    if k < N+1
+        angle_est = atan2(meas_pos(2,k+1)-meas_pos(2,k), meas_pos(1,k+1)-meas_pos(1,k));
+    else
+        angle_est = atan2(meas_pos(2,N+1)-meas_pos(2,N), meas_pos(1,N+1)-meas_pos(1,N));
+    end
+    Rt_est = [cos(angle_est) -sin(angle_est);
+              sin(angle_est) sin(angle_est) ];
+    opti.set_initial(Rt{k}, Rt_est);
+    opti.set_initial(p{k}, meas_pos(:,k));
+    
     X{k} =  [p{k};vec(Rt{k})];
 end
 
 U = opti.variable(nu,N);
+
+% a good initialization is needed to converge to the proper solution
+U_est = [];
+for k=1:N
+    dist = (meas_pos(1,k+1)-meas_pos(1,k))^2 + (meas_pos(2,k+1)-meas_pos(2,k))^2;
+    dist = sqrt(dist);
+    speed_est = dist/dt;
+    U_est = [U_est speed_est];
+end
+opti.set_initial(U(1,:),U_est);
 
 opti.subject_to(U(1,:)>=0);
 
@@ -119,7 +139,7 @@ for k=1:N
     Xk_end = rk4(ode_simp,dt,X{k},U(:,k));
     
     % Gap closing constraint
-    opti.subject_to(Xk_end==X{k+1});
+    opti.subject_to(Xk_end-X{k+1}==0);
     
 end
 

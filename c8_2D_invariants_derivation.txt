@@ -1,0 +1,21 @@
+The translational speed vector is Rt*[i1;0], so Rt defines a rotation matrix that rotates the x-axis to an axis parallel to the speed vector, so
+
+	Rt = [cos(theta)	-sin(theta)]
+		 [sin(theta)	cos(theta) ]
+		 
+If we take the derivative with respect to time and say that omega = dtheta/dt, we get
+
+	dRt/dt = [-sin(theta)*omega		-cos(theta)*omega]
+			 [cos(theta)*omega		-sin(theta)*omega]
+			 
+Notice that if we factor out omega, the first column of that matrix is equal to the second column of Rt and the second column of dRt/dt is equal to the negative of the first column of Rt, so we can write dRt/dt as
+
+	dRt/dt = [cos(theta)	-sin(theta)]	*	 [0		-1]		*	 omega
+			 [sin(theta)	cos(theta) ]		 [1		0 ]
+			 
+or
+
+	dRt/dt = Rt * [0		-omega]
+				  [omega	0	  ]
+				  
+and omega = dtheta/dt can be said to be the "curvature speed" according to its definition, so you can write omega = i2, which gives the desired equation.
