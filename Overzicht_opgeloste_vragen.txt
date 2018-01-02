@@ -4,6 +4,7 @@ ___________________________
 
 - a2_huber_norm  (2 punten)
 	- 26/12/2017 (Ben): opgelost, maar vereist nog nazicht + aanpassingen voor presentatie
+	- 02/01/2017 (Bert): alternatieve oplossing geformuleerd met behulp van een lookup table. Niet exact, maar in principe kan je arbitrair dicht komen dus ik beschouw het als een geldige oplossing.
 
 - b1_moving_obstacel_avoidance (2 punten)
 	- ../12/2017 (Ben): opgelost, maar vereist nog nazicht + aanpassingen voor presentatie
