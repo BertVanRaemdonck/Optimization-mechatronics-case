@@ -3,18 +3,25 @@ ___________________________
 
 
 - a2_huber_norm  (2 punten)
-	- 26/12/2017: opgelost, maar vereist nog nazicht + aanpassingen voor presentatie
+	- 26/12/2017 (Ben): opgelost, maar vereist nog nazicht + aanpassingen voor presentatie
 
 - b1_moving_obstacel_avoidance (2 punten)
-	- ../12/2017: opgelost, maar vereist nog nazicht + aanpassingen voor presentatie
+	- ../12/2017 (Ben): opgelost, maar vereist nog nazicht + aanpassingen voor presentatie
+	- 02/01/2018 (Bert): nagekeken en figuren geoptimaliseerd voor presentatie
 
 - b2a_convex_obstacle_multiple_shooting (2 punten)
-	- 26/12/2017: nagekeken, maar opgemerkt dat traject door object gaat (maar gevonden posities niet)
-	- ../12/2017: opgelost
+	- 26/12/2017 (Ben): nagekeken, maar opgemerkt dat traject door object gaat (maar gevonden posities niet)
+	- ../12/2017 (Bert): opgelost
+        - 02/01/2018 (Bert): nagekeken en figuren geoptimaliseerd voor presentatie (het traject dat door het object gaat is geen groot probleem: in de obstacle avoidance constraint kan >= 0 vervangen worden door een zekere veiligheidsfactor die dat verhelpt)
 
 - b3_aerodynamic_drag (1 punt)
-	- ../12/2017: opgelost, maar vereist nog nazicht + aanpassingen voor presentatie
+	- ../12/2017 (Ben): opgelost, maar vereist nog nazicht + aanpassingen voor presentatie
+	- 02/01/2018 (Bert): nagekeken en goedgekeurd
 
 - c8_2D_invariants_from_images (3 punten)
-	- 26/12/2017: nagekeken, maar zou graag de afleiding eens bezien
-	- ../12/2017: opgelost
+	- 26/12/2017 (Ben): nagekeken, maar zou graag de afleiding eens bezien
+	- 02/01/2018 (Bert): volledig opgelost, maar het nieuwe deel vereist nog nazicht
+
+- c9_invariants_obstacle_avoidance (1 punt)
+	- ../12/2017 (Ben): opgelost
+	- 02/01/2017 (Bert): nagekeken. Het is heel vreemd dat het met de tetraëder niet werkt, omdat casadi als je het numeriek checkt zijn eigen constraints geschonden heeft, dus ik denk zo dat er ergens een probleempje is met nauwkeurigheden of zo. Als je i.p.v. >0, >tol neemt, met tol iets van een 1e-6, dan werkt het wel goed... Hoe dan ook, een bol moet meer dan genoeg zijn voor een enkel puntje. De code moet wel nog opgekuist worden.

@@ -100,24 +100,33 @@ T_opt = sol.value(T);
 % time grid for printing
 tgrid = linspace(0,T_opt, N+1);
 
-figure;
-plot(tgrid, posx_opt, 'b')
-hold on
-plot(tgrid, posy_opt, 'g')    
-
-figure
+figure('Name', 'Optimal trajectory overview')
 plot(posx_opt,posy_opt,'b-o')
 hold on
 convex_obstacle = plot([obs_points(1,:) obs_points(1,1)], [obs_points(2,:) obs_points(2,1)], 'r-o');
-
+hold off
 axis equal
 
-figure
+figure('Name', 'Optimal trajectory');
+plot(tgrid, posx_opt, 'b')
+hold on
+plot(tgrid, posy_opt, 'g')  
+xlabel('Time')
+ylabel('Optimal trajectory (x in blue, y in green)')
+hold off
+
+figure('Name', 'Optimal velocity')
 plot(tgrid, velx_opt, 'b')
 hold on
 plot(tgrid, vely_opt, 'g')
+xlabel('Time')
+ylabel('Optimal velocity (x in blue, y in green)')
+hold off
 
-figure
+figure('Name', 'Optimal acceleration')
 plot(tgrid(1:end-1), accx_opt, 'b')
 hold on
 plot(tgrid(1:end-1), accy_opt, 'g')
+xlabel('Time')
+ylabel('Optimal acceleration (x in blue, y in green)')
+hold off

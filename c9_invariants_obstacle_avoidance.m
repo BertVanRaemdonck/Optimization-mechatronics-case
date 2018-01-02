@@ -263,10 +263,16 @@ end
 
 if case_tetrahedron
     % plotting tetrahedron
-    plot3(obs_tetrahedron(:,1),obs_tetrahedron(:,2),obs_tetrahedron(:,3),'b');
-    plot3(obs_tetrahedron([1,3],1),obs_tetrahedron([1,3],2),obs_tetrahedron([1,3],3),'b');
-    plot3(obs_tetrahedron([1,4],1),obs_tetrahedron([1,4],2),obs_tetrahedron([1,4],3),'b');
-    plot3(obs_tetrahedron([2,4],1),obs_tetrahedron([2,4],2),obs_tetrahedron([2,4],3),'b');
+%     plot3(obs_tetrahedron(:,1),obs_tetrahedron(:,2),obs_tetrahedron(:,3),'b');
+%     plot3(obs_tetrahedron([1,3],1),obs_tetrahedron([1,3],2),obs_tetrahedron([1,3],3),'b');
+%     plot3(obs_tetrahedron([1,4],1),obs_tetrahedron([1,4],2),obs_tetrahedron([1,4],3),'b');
+%     plot3(obs_tetrahedron([2,4],1),obs_tetrahedron([2,4],2),obs_tetrahedron([2,4],3),'b');
+    
+    for i = 1:4
+        face_coords = obs_tetrahedron;
+        face_coords(i,:) = [];  % delete a row to reduce the coordinate matrix to only contain coordinates of a certain face
+        fill3(face_coords(:,1), face_coords(:,2), face_coords(:,3), ones(3,1))
+    end
 
     xlabel('x')
     ylabel('y')

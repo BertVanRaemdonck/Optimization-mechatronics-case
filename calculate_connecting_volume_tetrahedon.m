@@ -16,6 +16,8 @@ function volume = calculate_connecting_volume_tetrahedon(points, X)
 %           the first point of 'points' will be taken, such that the
 %           function automatically returns the volume of the tetrahedon.
 
+    
+
     a_point = points(1,:);
     b_point = points(2,:);
     c_point = points(3,:);
@@ -26,7 +28,6 @@ function volume = calculate_connecting_volume_tetrahedon(points, X)
                         b_point-d_point;
                         c_point-d_point]))/6;
     else
-        
 %         nb_points = 4;
         volume = zeros(1, 1);
         
