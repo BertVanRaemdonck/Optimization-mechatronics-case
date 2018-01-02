@@ -18,6 +18,9 @@ ___________________________
 	- ../12/2017 (Ben): opgelost, maar vereist nog nazicht + aanpassingen voor presentatie
 	- 02/01/2018 (Bert): nagekeken en goedgekeurd
 
+- b4_bicycle_myltiple shooting (2 punten)
+	- 02/01/2018 (Bert): opgelost, nazicht is nog nodig maar de resultaten zijn uiterst logisch
+
 - c8_2D_invariants_from_images (3 punten)
 	- 26/12/2017 (Ben): nagekeken, maar zou graag de afleiding eens bezien
 	- 02/01/2018 (Bert): volledig opgelost, maar het nieuwe deel vereist nog nazicht
