@@ -103,26 +103,16 @@ for k=1:N+1
     p{k} = opti.variable(2,1); % object position
     Rt{k}  = opti.variable(2,2); % translational Frenet-Serret frame
     
-    if k < N+1
-        angle_est = atan2(meas_pos(2,k+1)-meas_pos(2,k), meas_pos(1,k+1)-meas_pos(1,k));
-    else
-        angle_est = atan2(meas_pos(2,N+1)-meas_pos(2,N), meas_pos(1,N+1)-meas_pos(1,N));
-    end
-    Rt_est = [cos(angle_est) -sin(angle_est);
-              sin(angle_est) sin(angle_est) ];
-    opti.set_initial(Rt{k}, Rt_est);
-    opti.set_initial(p{k}, meas_pos(:,k));
-    
     X{k} =  [p{k};vec(Rt{k})];
 end
 
 U = opti.variable(nu,N);
 
-% a good initialization is needed to converge to the proper solution
+% A good initialization of the invariant speeds is needed to converge to the proper solution
 U_est = [];
 for k=1:N
     dist = (meas_pos(1,k+1)-meas_pos(1,k))^2 + (meas_pos(2,k+1)-meas_pos(2,k))^2;
-    dist = sqrt(dist);
+    dist = sqrt(dist);  % distance between two consecutive sample points
     speed_est = dist/dt;
     U_est = [U_est speed_est];
 end
@@ -139,8 +129,7 @@ for k=1:N
     Xk_end = rk4(ode_simp,dt,X{k},U(:,k));
     
     % Gap closing constraint
-    opti.subject_to(Xk_end-X{k+1}==0);
-    
+    opti.subject_to(Xk_end-X{k+1}==0);    
 end
 
 % Construct objective
@@ -167,16 +156,26 @@ opti.solver('ipopt');
 
 % Solve the NLP
 sol = opti.solve();
-%%
 
+% Plot the solution
 sol.value(objective_fit)
 
 figure
 hold on
-plot(meas_pos(1,:),meas_pos(2,:),'b-')
+mix_factor = linspace(0,1,size(meas_pos,2));
+color = [1-mix_factor; zeros(size(mix_factor)) ; mix_factor];
+for k = 1:size(meas_pos,2)-1
+    line = [meas_pos(:,k) meas_pos(:,k+1)];
+    plot(line(1,:),line(2,:),'Color', color(:,k))
+end
 
 traj = sol.value([p{:}]);
-plot(traj(1,:),traj(2,:),'ro')
+mix_factor = linspace(0,1,size(traj,2));
+color = [1-mix_factor; zeros(size(mix_factor)) ; mix_factor];
+for k = 1:size(traj,2)
+   scatter(traj(1,k), traj(2,k), 30, color(:,k)','filled'); 
+end
+%plot(traj(1,:),traj(2,:),'ro')
 axis equal
 
 figure
@@ -184,4 +183,61 @@ plot(sol.value(U)')
 
 U_sol = sol.value(U);
 
+%% Generate a new trajectory based on the same invariants
+U_ref = U_sol;
+X_ref = sol.value([X{:}]);
 
+% input parameters
+p_fix = [ 0 0 ; -10 10 ; 60 60]';    % positions the trajectory has to visit
+t_fix = [ 1   ; N+1    ; round(N/2)]';    % respective "times" at which the trajectory has to visit those positions
+
+opti.subject_to();  % clear the previous constraints so that they don't interfere with the current problem
+
+% repeat the constraints that remain valid
+opti.subject_to(U(1,:)>=0);
+opti.subject_to(Rt{1}'*Rt{1} == eye(2));
+for k=1:N
+    % Integrate current state to obtain next state
+    Xk_end = rk4(ode_simp,dt,X{k},U(:,k));    
+    % Gap closing constraint
+    opti.subject_to(Xk_end-X{k+1}==0);    
+end
+for l = 1:length(t_fix)
+    k = t_fix(l);
+    opti.subject_to(p{k} - p_fix(:,l) == 0);
+end
+
+% Construct objective
+objective = 0;
+for k=1:N
+    e = U(:,k) - U_ref(:,k); % position error
+    objective = objective + e'*e;
+end
+
+opti.minimize(objective);
+
+% Initialize variables
+opti.set_initial(U, U_ref);
+
+% solve the NLP
+sol = opti.solve();
+
+% Plot the solution
+sol.value(objective_fit)
+traj = sol.value([p{:}]);
+
+figure
+% the dots are the points of the trajectory: the color is more red at the
+% beginning and more blue at the end of the trajectory. The black circles
+% represent the points from p_fix.
+hold on
+mix_factor = linspace(0,1,size(traj,2));
+color = [1-mix_factor; zeros(size(mix_factor)) ; mix_factor];
+for k = 1:size(traj,2)
+   scatter(traj(1,k), traj(2,k), 20, color(:,k)','filled'); 
+end
+
+scatter(p_fix(1,:), p_fix(2,:), 60, 'k')
+hold off
+
+axis equal
