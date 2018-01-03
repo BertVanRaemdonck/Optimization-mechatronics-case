@@ -1,14 +1,17 @@
-% fitting a circle to a set of points
+%% fitting a circle to a set of points
 
 clear all;
 close all;
 clc;
+
+%% Huber norm
+
 opti = casadi.Opti();
 
 r = 1;
 
 % huber norm parameters
-lambda = 1;
+lambda = 10;
 mu = 1;
 
 data = [1 0; 2-sqrt(2)/2 sqrt(2)/2; 2 1;2.5 0; 2 -1]';
@@ -26,6 +29,13 @@ data_xmax = max(data(1,:));
 data_ymin = min(data(2,:));
 data_ymax = max(data(2,:));
 
+% set initial values
+% Als je een set_initial doet op p met als initiële waarde het gemiddelde 
+    %van data_xmin en data_xmax (en hetzelfde voor y), convergeert hij wel naar iets logisch. 
+opti.set_initial(p{1},(data_xmin+data_xmax)/2);
+opti.set_initial(p{2},(data_ymin+data_ymax)/2);
+
+
 xgrid = linspace(data_xmin-1.5*r, data_xmax+1.5*r, N);
 ygrid = linspace(data_ymin-1.5*r, data_ymax+1.5*r, N);
 [X_lut, Y_lut] = ndgrid(xgrid, ygrid); % interpolation points
@@ -39,7 +49,7 @@ for i=1:size(huber_lut,1)
             if one_norm >= lambda/(2*mu)
                 huber_lut(i,j) = huber_lut(i,j) + lambda*(one_norm-lambda/(4*mu));
             else
-                rh = huber_lut(i,j) + mu*error'*error;
+                huber_lut(i,j) = huber_lut(i,j) + mu*error'*error;
             end
         end
     end
@@ -62,6 +72,7 @@ plot(data(1,:),data(2,:),'o')
 arc = 0:0.01:2*pi;
 circle = plot(sol.value(p(1))+r*cos(arc), sol.value(p(2))+r*sin(arc),'r');
 axis equal
+legend('data','Huber')
 
 fprintf('Optimal location: (%f,%f)\n', sol.value(p(1)), sol.value(p(2)))
 
@@ -112,3 +123,91 @@ ylabel('y')
 %     xlabel('x')
 %     ylabel('y')
 % end
+
+
+%% 2 norm for comparison
+opti2 = casadi.Opti();       % initializing optimazation problem
+
+x = opti2.variable(1,1);     % initiializing unknown variables
+y = opti2.variable(1,1);
+
+% data = [1   2-(sqrt(2)/2)   2   3   2;
+%         0   sqrt(2)/2       1   0   -1];
+data = [1   2-(sqrt(2)/2)   2   2.5   2;
+        0   sqrt(2)/2       1   0   -1];
+
+% gradually building the cost function (2 norm) 
+var = 0;
+
+
+for index=1:1:5
+    var = var + (sqrt( (x - data(1,index))^2 + (y - data(2,index))^2) - 1)^2;
+end
+
+% searching solution
+opti2.minimize (var);
+%opti.subject_to (x^2+y ^2 <=1)
+%opti.subject_to (x+y >=0)
+opti2.solver ('ipopt');
+sol2 = opti2.solve();
+px = sol2.value (x)
+py = sol2.value (y)
+
+
+% plotting solution
+r = 1;
+
+
+
+figure()
+plot(data(1,:),data(2,:),'o')
+
+hold on
+th = linspace(0,2*pi,100);          % begin, einde, aantal punten
+plot(r*cos(th) + px, r*sin(th) + py)
+hold off
+axis equal
+legend('data','2 norm')
+
+% plotting mesh with 2 norm
+[X,Y] = meshgrid(linspace(0,3),linspace(-2,2));
+N = size(data,2);           % get the size of the data
+
+
+Z_2_norm = zeros(size(X));
+for i=1:size(X,1)
+   for j=1:size(X,2)
+      pnum = [X(i,j);Y(i,j)];
+      e = sqrt(sum((data-repmat(pnum,1,N)).^2,1))'-r;
+      Z_2_norm(i,j) = norm(e,2); 
+   end
+end
+
+
+
+figure
+mesh(X,Y,Z_2_norm)
+
+
+%% Comparison of results
+
+
+figure()
+hold on
+plot(data(1,:),data(2,:),'o')
+arc = 0:0.01:2*pi;
+circle = plot(sol.value(p(1))+r*cos(arc), sol.value(p(2))+r*sin(arc),'r');
+axis equal
+plot(r*cos(th) + px, r*sin(th) + py,'b');
+legend('data','Huber','2 norm');
+
+
+figure
+mesh(X,Y,Z)
+rotate3d on
+hold on
+xlabel('x')
+ylabel('y')
+mesh(X,Y,Z_2_norm)
+
+legend('Huber','2 norm');
