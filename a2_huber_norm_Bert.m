@@ -11,8 +11,8 @@ opti = casadi.Opti();
 r = 1;
 
 % huber norm parameters
-lambda = 10;
-mu = 1;
+lambda = 1;
+mu = 5;
 
 data = [1 0; 2-sqrt(2)/2 sqrt(2)/2; 2 1;2.5 0; 2 -1]';
 N = size(data,2);
@@ -44,7 +44,8 @@ huber_lut = zeros(size(X_lut));
 for i=1:size(huber_lut,1)
     for j=1:size(huber_lut,2)
         for k = 1:size(data,2)
-            error = data(:,k) - [X_lut(i,j); Y_lut(i,j)];
+            difference = data(:,k) - [X_lut(i,j); Y_lut(i,j)];
+            error = difference - r*difference/norm(difference);
             one_norm = abs(error(1))+abs(error(2));
             if one_norm >= lambda/(2*mu)
                 huber_lut(i,j) = huber_lut(i,j) + lambda*(one_norm-lambda/(4*mu));
@@ -131,6 +132,9 @@ opti2 = casadi.Opti();       % initializing optimazation problem
 x = opti2.variable(1,1);     % initiializing unknown variables
 y = opti2.variable(1,1);
 
+opti2.set_initial(x,(data_xmin+data_xmax)/2);
+opti2.set_initial(y,(data_ymin+data_ymax)/2);
+
 % data = [1   2-(sqrt(2)/2)   2   3   2;
 %         0   sqrt(2)/2       1   0   -1];
 data = [1   2-(sqrt(2)/2)   2   2.5   2;
@@ -138,7 +142,6 @@ data = [1   2-(sqrt(2)/2)   2   2.5   2;
 
 % gradually building the cost function (2 norm) 
 var = 0;
-
 
 for index=1:1:5
     var = var + (sqrt( (x - data(1,index))^2 + (y - data(2,index))^2) - 1)^2;

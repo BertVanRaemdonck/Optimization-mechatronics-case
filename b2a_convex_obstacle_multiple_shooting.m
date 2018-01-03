@@ -130,3 +130,18 @@ plot(tgrid(1:end-1), accy_opt, 'g')
 xlabel('Time')
 ylabel('Optimal acceleration (x in blue, y in green)')
 hold off
+
+%% Plot the connecting area for all the points in the domain
+N = 200;
+[X,Y] = meshgrid(linspace(0,10,N),linspace(0,10,N));
+conn_area = zeros(N);
+for i = 1:N
+    for j = 1:N
+        conn_area(i,j) = calculate_connecting_area(obs_points, [X(i,j);Y(i,j)]);
+    end
+end
+
+range_areas = max(max(conn_area))-min(min(conn_area));
+figure('Name', 'Contours of the connecting area function')
+contour(X,Y,conn_area, obs_area+linspace(1e-2,range_areas,15))
+axis equal
