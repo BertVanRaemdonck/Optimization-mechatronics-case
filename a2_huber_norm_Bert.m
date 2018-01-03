@@ -12,7 +12,7 @@ r = 1;
 
 % huber norm parameters
 lambda = 1;
-mu = 5;
+mu = 10;
 
 data = [1 0; 2-sqrt(2)/2 sqrt(2)/2; 2 1;2.5 0; 2 -1]';
 N = size(data,2);
@@ -102,6 +102,51 @@ mesh(X,Y,Z)
 rotate3d on
 xlabel('x')
 ylabel('y')
+
+
+% plotting mesh with H norm
+[X,Y] = meshgrid(linspace(0,3),linspace(-2,2));
+N = size(data,2);           % get the size of the data
+
+
+Z_H_norm = zeros(size(X));
+
+
+for i = 1:size(X,1)
+    for j = 1:size(X,2)
+        % z = [X(i,j);Y(i,j)];
+        pnum = [X(i,j);Y(i,j)];
+        e = sqrt(sum((data-repmat(pnum,1,N)).^2,1))'-r;
+        
+        l_11_z = sum(abs(e),1);                             % 1 norm of each error vector in z
+        l_22_z = sum(e.^2,1);                               % squared 2 norm of each error vector in z
+
+        rh_lin = lambda*(l_11_z - lambda/(4*mu));         % upper equation of the huber norm factors
+        rh_quad = mu*l_22_z;                               % lower equation of the huber norm
+        rh_trans = mu*(lambda/(2*mu))^2;                      % value of rh for which it switches its case
+        rh_quad_mod = -abs(rh_quad-rh_trans) + rh_trans;  % modified version of the lower equation that's only bigger than the upper equation when norm(z,1) >= lambda/(2*mu)
+        rh = max(rh_lin, rh_quad_mod);                   % effective value of rh for every z
+        
+        Z_H_norm(i,j) = rh;
+    end
+end
+
+% for i=1:size(X,1)
+%    for j=1:size(X,2)
+%       pnum = [X(i,j);Y(i,j)];
+%       e = sqrt(sum((data-repmat(pnum,1,N)).^2,1))'-r;
+%       Z_H_norm(i,j) = norm(e,2); 
+%    end
+% end
+
+
+figure
+mesh(X,Y,Z_H_norm)
+rotate3d on
+xlabel('x')
+ylabel('y')
+
+
 
 % %% Rest of example code that unnecessary for our problem case
 % 
@@ -206,7 +251,7 @@ legend('data','Huber','2 norm');
 
 
 figure
-mesh(X,Y,Z)
+mesh(X,Y,Z_H_norm)
 rotate3d on
 hold on
 xlabel('x')
