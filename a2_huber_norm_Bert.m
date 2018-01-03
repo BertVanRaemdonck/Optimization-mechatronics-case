@@ -167,7 +167,7 @@ th = linspace(0,2*pi,100);          % begin, einde, aantal punten
 plot(r*cos(th) + px, r*sin(th) + py)
 hold off
 axis equal
-legend('data','2 norm')
+
 
 % plotting mesh with 2 norm
 [X,Y] = meshgrid(linspace(0,3),linspace(-2,2));
