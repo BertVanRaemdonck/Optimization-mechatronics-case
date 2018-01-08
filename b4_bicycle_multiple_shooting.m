@@ -4,6 +4,8 @@ clear all
 close all
 clc
 
+%% Create the bicycle optimization problem
+
 N = 100; % Control discretization
 L = 1;   % Length of the wheel base
 
@@ -14,12 +16,12 @@ opti = casadi.Opti();
 % states
 x = opti.variable(N+1,1); % position
 y = opti.variable(N+1,1);
-theta = opti.variable(N+1,1);
+theta = opti.variable(N+1,1);   % orientation of the bicycle
 % controls
-vel = opti.variable(N,1); 	% total vehicle velocity
+vel = opti.variable(N,1); 	% total bicycle velocity
 delta = opti.variable(N,1); % steering angle
 
-T = opti.variable(1); % motion time
+T = opti.variable(1); % motion time --> will be optimized
 
 % ODE rhs function
 % "x" = x, y, theta
@@ -30,8 +32,8 @@ ode = @(s,u)[u(1)*cos(s(3)) ; u(1)*sin(s(3)) ; u(1)/L*tan(u(2))];  % =xdot
 vel_min = 0; % I can't ride backwards on my bike!
 vel_max = 5;
 % you also need to limit the steering angle, otherwise the steering angle
-% can become +/- pi/2 which results in an undefined rotational speed (don't
-% try this with you own bike!)
+% can become +/- pi/2 which results in an undefined rotational speed due to 
+% the tan (don't try this with you own bike!)
 delta_min = -pi/4;
 delta_max = pi/4;
 
@@ -61,13 +63,6 @@ opti.subject_to({theta(1)==x_init(3), theta(end)==x_final(3)});
 % set initial guess
 opti.set_initial(T, 5); % seconds
 
-%theta_est = atan2(x_final(2)-x_init(2), x_final(1)-x_init(1));
-%opti.set_initial(theta, theta_est*ones(size(theta)));
-%opti.set_initial(x, linspace(x_init(1), x_final(1), N+1));
-%opti.set_initial(y, linspace(x_init(2), x_final(2), N+1));
-%opti.set_initial(delta, zeros(size(delta)));
-%opti.set_initial(vel, vel_max*ones(size(vel)));
-
 % Objective function
 opti.minimize(T);
 
@@ -83,12 +78,16 @@ vel_opt = sol.value(vel);
 delta_opt = sol.value(delta);
 T_opt = sol.value(T);
 
+%% Plot the solution
+
 % time grid for printing
 tgrid = linspace(0,T_opt, N+1);
 
+% plot the solution
 figure;
 title('State trajectories')
 subplot(2,1,1)
+% plot the states (x, y, theta)
 hold on
 plot(tgrid, posx_opt, 'b-x')
 plot(tgrid, posy_opt, 'r-o')
@@ -97,12 +96,15 @@ xlabel('time [s]')
 ylabel('position [m]')
 
 subplot(2,1,2)
+% plot the inputs (vel, delta)
 hold on
 stairs(tgrid(1:end-1), vel_opt, 'b-x')
 stairs(tgrid(1:end-1), delta_opt, 'r-o')
 xlabel('time [s]')
 ylabel('inputs')
 
+
+% plot the top view of the trajectory
 figure
 hold on
 plot(posx_opt,posy_opt)
@@ -111,4 +113,5 @@ ylabel('position-y [m]')
 title('Top view')
 axis equal
 
+% display the found optimal time
 disp(strcat('Optimal motion time: ' , num2str(sol.value(T)), ' s'));

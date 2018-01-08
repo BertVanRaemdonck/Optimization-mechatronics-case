@@ -30,8 +30,10 @@ for i = 1:loops
 
     red_UINT8 = I(:,:,1);
     data = cast(red_UINT8, 'double');
-
-    [x_, y_] = tracking_method_3(data, x0, y0)
+    
+    % calculate the middle of the red circle for the given image (uses its
+    % own optimization problem)
+    [x_, y_] = tracking_method_3(data, x0, y0)          
 
     list_x = [list_x, x_];
     list_y = [list_y, y_];
@@ -83,7 +85,7 @@ u = [i1 ; i2];
 nu = size(u,1);
 
 % State dynamics equations of the form: dx/dt = f(x,u,t)
-dRt = Rt*[0 -i2 ; i2 0];    % the big difference
+dRt = Rt*[0 -i2 ; i2 0];    % the big difference with the 3D case
 dp = Rt*[i1;0];
 
 rhs = [dp; dRt(:)];
@@ -157,13 +159,14 @@ opti.solver('ipopt');
 % Solve the NLP
 sol = opti.solve();
 
-% Plot the solution
+%% Plot the solution for the found invariants
 sol.value(objective_fit)
 
 figure
 hold on
 mix_factor = linspace(0,1,size(meas_pos,2));
-color = [1-mix_factor; zeros(size(mix_factor)) ; mix_factor];
+color = [1-mix_factor; zeros(size(mix_factor)) ; mix_factor];   % changes the color to see the time aspect in the figure
+% plot the reference trajectory with lines
 for k = 1:size(meas_pos,2)-1
     line = [meas_pos(:,k) meas_pos(:,k+1)];
     plot(line(1,:),line(2,:),'Color', color(:,k))
@@ -172,12 +175,15 @@ end
 traj = sol.value([p{:}]);
 mix_factor = linspace(0,1,size(traj,2));
 color = [1-mix_factor; zeros(size(mix_factor)) ; mix_factor];
+% plot the newly calculated trajectory with points --> should match the
+% reference trajectory
 for k = 1:size(traj,2)
    scatter(traj(1,k), traj(2,k), 30, color(:,k)','filled'); 
 end
 %plot(traj(1,:),traj(2,:),'ro')
 axis equal
 
+% plot the found invariants itself
 figure
 plot(sol.value(U)')
 
@@ -222,7 +228,7 @@ opti.set_initial(U, U_ref);
 % solve the NLP
 sol = opti.solve();
 
-% Plot the solution
+%% Plot the solution of the newly calculated trajectory
 sol.value(objective_fit)
 traj = sol.value([p{:}]);
 

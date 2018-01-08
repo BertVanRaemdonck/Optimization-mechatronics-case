@@ -4,6 +4,8 @@ clear all
 close all
 clc
 
+%% Car A-->B multiple shooting without aerodynamic drag (for reference)
+
 N = 100; % Control discretization
 m = 500; % vehicle mass [kg]
 
@@ -20,7 +22,7 @@ dy = opti.variable(N+1,1);
 ddx = opti.variable(N,1); % acceleration
 ddy = opti.variable(N,1);
 
-T = opti.variable(1); % motion time
+T = opti.variable(1); % motion time --> will be optimized
 
 % ODE rhs function
 ode = @(x,u)[x(3); x(4); u(1) ; u(2)];  % =xdot
@@ -77,11 +79,16 @@ accx_opt = sol.value(ddx);
 accy_opt = sol.value(ddy);
 T_opt = sol.value(T);
 
+
+%% Plot the reference solution (without drag)
+
 % time grid for printing
 tgrid = linspace(0,T_opt, N+1);
 
+% plot the found solution
 figure;
 subplot(3,1,1)
+% plot the found positions
 hold on
 plot(tgrid, posx_opt, 'b-x')
 plot(tgrid, posy_opt, 'r-o')
@@ -90,6 +97,7 @@ ylabel('position [m]')
 title('State trajectories without aerodynamic drag')
 
 subplot(3,1,2)
+% plot the found velocities
 hold on
 plot(tgrid, velx_opt, 'b-x')
 plot(tgrid, vely_opt, 'r-o')
@@ -97,6 +105,7 @@ xlabel('time [s]')
 ylabel('velocity [m/s]')
 
 subplot(3,1,3)
+% plot the found accelerations
 hold on
 stairs(tgrid(1:end-1), m*accx_opt, 'b-x')
 stairs(tgrid(1:end-1), m*accy_opt, 'r-o')
@@ -104,6 +113,7 @@ xlabel('time [s]')
 ylabel('acceleration [m/s^2]')
 
 
+% plot the top down view of the trajectory
 figure
 hold on
 plot(posx_opt,posy_opt)
@@ -112,6 +122,7 @@ ylabel('position-y [m]')
 title('Top down view without aerodynamic drag')
 axis equal
 
+% display the found optimal time
 disp(strcat('Optimal motion time: ' , num2str(sol.value(T)), ' s'));
 
 
@@ -136,7 +147,7 @@ dy = opti.variable(N+1,1);
 ddx = opti.variable(N,1); % acceleration
 ddy = opti.variable(N,1);
 
-T = opti.variable(1); % motion time
+T = opti.variable(1); % motion time --> will be minimized
 
 % ODE rhs function
 ode = @(x,u)[x(3); x(4); u(1) ; u(2)];  % =xdot
@@ -196,12 +207,16 @@ accx_opt = sol.value(ddx);
 accy_opt = sol.value(ddy);
 T_opt = sol.value(T);
 
+
+%% Plot the solution with drag
+
 % time grid for printing
 tgrid = linspace(0,T_opt, N+1);
 
 figure;
 
 subplot(3,1,1)
+% plot the found positions
 hold on
 plot(tgrid, posx_opt, 'b-x')
 plot(tgrid, posy_opt, 'r-o')
@@ -210,6 +225,7 @@ ylabel('position [m]')
 title('State trajectories WITH aerodynamic drag')
 
 subplot(3,1,2)
+% plot the found velocities
 hold on
 plot(tgrid, velx_opt, 'b-x')
 plot(tgrid, vely_opt, 'r-o')
@@ -217,6 +233,7 @@ xlabel('time [s]')
 ylabel('velocity [m/s]')
 
 subplot(3,1,3)
+% plot the found accelerations
 hold on
 stairs(tgrid(1:end-1), m*accx_opt, 'b-x')
 stairs(tgrid(1:end-1), m*accy_opt, 'r-o')
@@ -224,6 +241,7 @@ xlabel('time [s]')
 ylabel('acceleration [m/s^2]')
 
 
+% plot the top down view of the trajectory
 figure
 hold on
 plot(posx_opt,posy_opt)
@@ -232,4 +250,5 @@ ylabel('position-y [m]')
 title('Top down view WITH aerodynamic drag')
 axis equal
 
+% display the found optimal time
 disp(strcat('Optimal motion time: ' , num2str(sol.value(T)), ' s'));
