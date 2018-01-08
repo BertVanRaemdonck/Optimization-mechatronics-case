@@ -2,15 +2,19 @@ clear all;
 close all;
 clc;
 
-%% Setting up experiment
+%% Setting up the possible cases
+
+% change the following cases to true if you want to test them and plot them
 
 case_small = false;
 case_big = true;
 
 case_sphere = true;
-case_tetrahedron = true;
-case_cube = false;              % does not work for the moment
+case_tetrahedron = false;        % the big tetrahedron does not work for the moment, if an tolerance is added it might work better
+case_cube = false;              % does not work for the moment BUT provides usefull data for the tetrahedron
 
+
+%% Setting up the experiment
 import casadi.*
 
 T = 1;   % End time
@@ -122,8 +126,8 @@ if case_sphere
     obs_sphere_radius = 0.4;
 
 end
-%% Building casadi problem
 
+%% Building casadi problem
 
 % System states
 p = SX.sym('p',3,1); % object position
@@ -191,7 +195,9 @@ for k=1:N
         volume_subject = calculate_connecting_volume_tetrahedon(obs_tetrahedron,p{k}');
         opti.subject_to(volume_subject - volume_tetrahedron > 0);
     end
-    % opti.subject_to((x(index)-obs_pos_moving(index,1)).^2 + (y(index)-obs_pos_moving(index,2)).^2 >= obs_rad_moving^2);
+    
+    % the cube does not work, but still provides relevant info for the
+    % tetrahedron
     
 end
 
@@ -214,18 +220,23 @@ opti.solver('ipopt');
 
 % Solve the NLP
 sol = opti.solve();
-%%
+
+%% Plot the solution
 
 figure
 hold on
+% plot the reference trajectory
 plot3(meas_pos(1,:),meas_pos(2,:),meas_pos(3,:),'b-')
 
 traj = sol.value([p{:}]);
+% plot the newly found trajectory
 plot3(traj(1,:),traj(2,:),traj(3,:),'ro')
+% plot the start and finish location that the new trajectory had to obey
 plot3(P_start(1),P_start(2),P_start(3),'kx')
 plot3(P_end(1),P_end(2),P_end(3),'ks')
 axis equal
 
+% plotting the cube if needed
 if case_cube        
     for index = 1: number_obs_points
         a=1;
@@ -252,7 +263,7 @@ if case_cube
 
 end
 
-% plotting sphere
+% plotting the sphere if needed
 
 if case_sphere
     [X_sphere,Y_sphere,Z_sphere] = sphere;
@@ -261,13 +272,9 @@ if case_sphere
         obs_sphere_radius*Z_sphere + obs_sphere_center(3,1));
 end
 
+% plotting the tetrahedron if needed
+
 if case_tetrahedron
-    % plotting tetrahedron
-%     plot3(obs_tetrahedron(:,1),obs_tetrahedron(:,2),obs_tetrahedron(:,3),'b');
-%     plot3(obs_tetrahedron([1,3],1),obs_tetrahedron([1,3],2),obs_tetrahedron([1,3],3),'b');
-%     plot3(obs_tetrahedron([1,4],1),obs_tetrahedron([1,4],2),obs_tetrahedron([1,4],3),'b');
-%     plot3(obs_tetrahedron([2,4],1),obs_tetrahedron([2,4],2),obs_tetrahedron([2,4],3),'b');
-    
     for i = 1:4
         face_coords = obs_tetrahedron;
         face_coords(i,:) = [];  % delete a row to reduce the coordinate matrix to only contain coordinates of a certain face
@@ -281,6 +288,8 @@ end
 
 
 view([-76 14])
+
+% plotting the invariants
 figure
 hold on
 plot(sol.value(U)')
