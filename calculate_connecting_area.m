@@ -4,7 +4,7 @@ function area = calculate_connecting_area(points, X)
 % described in the points argument, and that for all possible consecutive
 % pairs. If the point X lies inside the described shape, the calculated
 % area is equal to the area of the shape. If it lies outside of it, the
-% area will be bigger than that area.
+% calculated area will be bigger than that area.
 %
 % Arguments:
 %   points: a 2xN matrix with N>=2 (N=2 defines a line so the returned area

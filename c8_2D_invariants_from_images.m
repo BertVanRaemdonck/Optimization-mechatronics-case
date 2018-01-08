@@ -162,10 +162,10 @@ sol = opti.solve();
 %% Plot the solution for the found invariants
 sol.value(objective_fit)
 
-figure
+figure('Name', 'Comparison of reference and fitted trajectories')
 hold on
 mix_factor = linspace(0,1,size(meas_pos,2));
-color = [1-mix_factor; zeros(size(mix_factor)) ; mix_factor];   % changes the color to see the time aspect in the figure
+color = [1-mix_factor; zeros(size(mix_factor)) ; mix_factor];   % changes the color to see the time aspect in the figure: red = start, blue = end of trajectory
 % plot the reference trajectory with lines
 for k = 1:size(meas_pos,2)-1
     line = [meas_pos(:,k) meas_pos(:,k+1)];
@@ -175,16 +175,14 @@ end
 traj = sol.value([p{:}]);
 mix_factor = linspace(0,1,size(traj,2));
 color = [1-mix_factor; zeros(size(mix_factor)) ; mix_factor];
-% plot the newly calculated trajectory with points --> should match the
-% reference trajectory
+% plot the fitted trajectory with dots
 for k = 1:size(traj,2)
    scatter(traj(1,k), traj(2,k), 30, color(:,k)','filled'); 
 end
-%plot(traj(1,:),traj(2,:),'ro')
 axis equal
 
-% plot the found invariants itself
-figure
+% plot the found invariants themselves
+figure('Name', 'Fitted invariants')
 plot(sol.value(U)')
 
 U_sol = sol.value(U);
@@ -194,8 +192,8 @@ U_ref = U_sol;
 X_ref = sol.value([X{:}]);
 
 % input parameters
-p_fix = [ 0 0 ; -10 10 ; 60 60]';    % positions the trajectory has to visit
-t_fix = [ 1   ; N+1    ; round(N/2)]';    % respective "times" at which the trajectory has to visit those positions
+p_fix = [ 0 0 ; -10 10 ; 60 60]';         % positions the trajectory has to visit
+t_fix = [ 1   ; N+1    ; round(N/2)]';    % respective time-indices at which the trajectory has to visit those positions
 
 opti.subject_to();  % clear the previous constraints so that they don't interfere with the current problem
 
@@ -208,6 +206,8 @@ for k=1:N
     % Gap closing constraint
     opti.subject_to(Xk_end-X{k+1}==0);    
 end
+
+% add constraints to make the new trajectory visit the required points
 for l = 1:length(t_fix)
     k = t_fix(l);
     opti.subject_to(p{k} - p_fix(:,l) == 0);
@@ -232,7 +232,7 @@ sol = opti.solve();
 sol.value(objective_fit)
 traj = sol.value([p{:}]);
 
-figure
+figure('Name', 'New trajectory based on identified invariants')
 % the dots are the points of the trajectory: the color is more red at the
 % beginning and more blue at the end of the trajectory. The black circles
 % represent the points from p_fix.

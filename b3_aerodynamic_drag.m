@@ -86,7 +86,7 @@ T_opt = sol.value(T);
 tgrid = linspace(0,T_opt, N+1);
 
 % plot the found solution
-figure;
+figure('Name', 'States of the car without drag');
 subplot(4,1,1)
 % plot the found positions
 hold on
@@ -122,7 +122,7 @@ ylabel('force [N]')
 
 
 % plot the top down view of the trajectory
-figure
+figure('Name', 'Trajectory without aerodynamic drag')
 hold on
 plot(posx_opt,posy_opt)
 xlabel('position-x [m]')
@@ -221,7 +221,7 @@ T_opt = sol.value(T);
 % time grid for printing
 tgrid = linspace(0,T_opt, N+1);
 
-figure;
+figure('Name', 'States of the car with drag');
 
 subplot(4,1,1)
 % plot the found positions
@@ -258,7 +258,7 @@ ylabel('force [N]')
 
 
 % plot the top down view of the trajectory
-figure
+figure('Name', 'Trajectory with aerodynamic drag')
 hold on
 plot(posx_opt,posy_opt)
 xlabel('position-x [m]')

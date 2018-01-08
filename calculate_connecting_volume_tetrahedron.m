@@ -1,27 +1,25 @@
-function volume = calculate_connecting_volume_tetrahedon(points, X)
+function volume = calculate_connecting_volume_tetrahedron(points, X)
 % Calculates the total volume you get when you add the volumes of the
-% tetrahedons you get by connecting point X to four consecutive points of the 
-% tetrahedon described in the points argument, and that for all possible consecutive
-% points. If the point X lies inside the described shape, the calculated
-% volume is equal to the volume of the shape. If it lies outside of it, the
-% volume will be bigger than that volume.
-%
-% volume tetrahedon (a,b,c,d) = det(a-d,b-d,c-d)/6
+% tetrahedrons formed by connecting point X to four consecutive points of 
+% the tetrahedron described in the points argument, and that for all 
+% possible consecutive points. If the point X lies inside the described 
+% shape, the calculated volume is equal to the volume of the shape. If it 
+% lies outside of it, the calculated volume will be bigger than the volume 
+% of the shape.
 %
 % Arguments:
 %   points: a 4x3 matrix with each column gives the x, y and z coordinate 
 %           of a corner of the tetrahedon.
 %   X:      a 1x3 vector describing the base point from which the connected
-%           volume will be calculated. Optional argument: if it isn't given,
-%           the first point of 'points' will be taken, such that the
+%           volume will be calculated. Optional argument: if it isn't 
+%           given, the first point of 'points' will be taken, such that the
 %           function automatically returns the volume of the tetrahedon.
-
-    
 
     a_point = points(1,:);
     b_point = points(2,:);
     c_point = points(3,:);
     d_point = points(4,:);
+    
     if nargin < 2
         % only return the volume of the given tetrahedron
         volume = abs(det([a_point-d_point;

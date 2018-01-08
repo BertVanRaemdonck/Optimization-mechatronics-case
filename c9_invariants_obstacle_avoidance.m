@@ -10,9 +10,8 @@ case_small = false;
 case_big = true;
 
 case_sphere = true;
-case_tetrahedron = false;        % the big tetrahedron does not work for the moment, if an tolerance is added it might work better
-case_cube = false;              % does not work for the moment BUT provides usefull data for the tetrahedron
-
+case_tetrahedron = false;       % the big tetrahedron does not work for the moment, if a tolerance is added to the inequality constraint, it might work better
+case_cube = false;              % does not work for the moment BUT is useful since the vertices of the tetrahedron is a subset of those of the cube
 
 %% Setting up the experiment
 import casadi.*
@@ -70,7 +69,7 @@ if case_cube
     % enlarging obs1_points for plotting
     obs1_points(9:16,:) = obs1_points(1:8,:);
 
-    figure();
+    figure('Name', 'Obstacle cube');
     for index = 1: number_obs_points
         a=1;
         index_numbers = [index,index+a];
@@ -93,22 +92,18 @@ if case_cube
     xlabel('x')
     ylabel('y')
     zlabel('z')
-
 end
 
-% building tetrahedon
+% building tetrahedron
 
 if case_tetrahedron
     obs_tetrahedron = [obs1_points(1:3,:);
                         obs1_points(5,:)];
 
-    % obs_tetrahedron = [obs1_points(4,:);
-    %                     obs1_points(6:8,:)];
-
-    volume_tetrahedron = calculate_connecting_volume_tetrahedon(obs_tetrahedron);
+    volume_tetrahedron = calculate_connecting_volume_tetrahedron(obs_tetrahedron);
 
     % plotting tetrahedron
-    figure()
+    figure('Name', 'Obstacle tetrahedron')
     plot3(obs_tetrahedron(:,1),obs_tetrahedron(:,2),obs_tetrahedron(:,3),'b');
     hold on
     plot3(obs_tetrahedron([1,3],1),obs_tetrahedron([1,3],2),obs_tetrahedron([1,3],3),'b');
@@ -117,14 +112,12 @@ if case_tetrahedron
     xlabel('x')
     ylabel('y')
     zlabel('z')
-
 end
 
 if case_sphere
     % building sphere
     obs_sphere_center = [0.5;0.75;0.5];
     obs_sphere_radius = 0.4;
-
 end
 
 %% Building casadi problem
@@ -152,7 +145,7 @@ ode_simp = Function('ode_simp',{x,u},{rhs});
 
 opti = casadi.Opti();
 
-% Create decision variables and parameters for multipleshooting
+% Create decision variables and parameters for multiple shooting
 p = cell(1,N+1);
 Rt = cell(1,N+1);
 X = cell(1,N+1);
@@ -178,7 +171,7 @@ P_end = [1;1;1];
 opti.subject_to(p{1}==P_start);
 opti.subject_to(p{end}==P_end);
 
-% Dynamic constraints
+% Dynamic and obstacle avoidance constraints
 for k=1:N
     % Integrate current state to obtain next state
     Xk_end = rk4(ode_simp,dt,X{k},U(:,k));
@@ -192,13 +185,13 @@ for k=1:N
     end
     
     if case_tetrahedron
-        volume_subject = calculate_connecting_volume_tetrahedon(obs_tetrahedron,p{k}');
+        volume_subject = calculate_connecting_volume_tetrahedron(obs_tetrahedron,p{k}');
         opti.subject_to(volume_subject - volume_tetrahedron > 0);
     end
     
-    % the cube does not work, but still provides relevant info for the
+    % no case for the cube since it doesn't work, but the cube case needs
+    % to be turned on to provide the source of the vertices of the 
     % tetrahedron
-    
 end
 
 % Construct objective
@@ -223,7 +216,7 @@ sol = opti.solve();
 
 %% Plot the solution
 
-figure
+figure('Name', 'Reference trajectory, newly generated trajectory and obstacle')
 hold on
 % plot the reference trajectory
 plot3(meas_pos(1,:),meas_pos(2,:),meas_pos(3,:),'b-')
@@ -290,7 +283,7 @@ end
 view([-76 14])
 
 % plotting the invariants
-figure
+figure('Name', 'Invariants of the newly generated trajectory')
 hold on
 plot(sol.value(U)')
 plot(U_ref')

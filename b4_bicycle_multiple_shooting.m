@@ -24,20 +24,21 @@ delta = opti.variable(N,1); % steering angle
 T = opti.variable(1); % motion time --> will be optimized
 
 % ODE rhs function
-% "x" = x, y, theta
+% "s" = x, y, theta
 % "u" = vel, delta
 ode = @(s,u)[u(1)*cos(s(3)) ; u(1)*sin(s(3)) ; u(1)/L*tan(u(2))];  % =xdot
 
 % input constraints
-vel_min = 0; % I can't ride backwards on my bike!
+vel_min = 0; % Can't ride backwards on a bicycle
 vel_max = 5;
 % you also need to limit the steering angle, otherwise the steering angle
 % can become +/- pi/2 which results in an undefined rotational speed due to 
-% the tan (don't try this with you own bike!)
+% the tan. Also, a deltra close to pi/2 results in a very small turning
+% radius which is hard to see on the figures
 delta_min = -pi/4;
 delta_max = pi/4;
 
-% Initial and terminal constraints
+% Initial and terminal conditions
 x_init = [0., 0., pi/2]; % x, y, theta   
 x_final = [10., 10., pi];
 

@@ -2,54 +2,54 @@ clear all
 clc
 close all
 
-% import casadi.*
+% This file does the fitting of the circle to a set of data points using
+% the Huber norm. The Huber norm is implemented with the method described
+% in:
+% Zadorozhnyi, O. e.a., 'Huber-Norm Regularization for Linear Prediction
+% Models', http://www.stephanmandt.com/papers/ECML_2016.pdf
+% In particular, the method described in section 3.2 of that paper is
+% implemented here
 
-opti = casadi.Opti();       % initializing optimazation problem
+%% Squared 2 norm for reference
+
+opti = casadi.Opti();       % initializing optimization problem
 
 x = opti.variable(1,1);     % initiializing unknown variables
 y = opti.variable(1,1);
 
 % data = [1   2-(sqrt(2)/2)   2   3   2;
-%         0   sqrt(2)/2       1   0   -1];
+%         0   sqrt(2)/2       1   0   -1];      % unperturbed circle points data
 data = [1   2-(sqrt(2)/2)   2   2.5   2;
-        0   sqrt(2)/2       1   0   -1];
+        0   sqrt(2)/2       1   0   -1];        % perturbed circle points data
 
 % gradually building the cost function (2 norm) 
-var = 0;
-
-
+objective = 0;
 for index=1:1:5
-    var = var + (sqrt( (x - data(1,index))^2 + (y - data(2,index))^2) - 1)^2;
+    objective = objective + (sqrt( (x - data(1,index))^2 + (y - data(2,index))^2) - 1)^2;
 end
 
 % searching solution
-opti.minimize (var);
-%opti.subject_to (x^2+y ^2 <=1)
-%opti.subject_to (x+y >=0)
+opti.minimize (objective);
 opti.solver ('ipopt');
 sol = opti.solve();
 px = sol.value (x)
 py = sol.value (y)
 
-
 % plotting solution
 r = 1;
 
-
-
-figure()
+figure('Name', 'Fitted circle using the squared 2 norm')
 plot(data(1,:),data(2,:),'o')
 
 hold on
-th = linspace(0,2*pi,100);          % begin, einde, aantal punten
+th = linspace(0,2*pi,100);         
 plot(r*cos(th) + px, r*sin(th) + py)
 hold off
 axis equal
 
 % plotting mesh with 2 norm
 [X,Y] = meshgrid(linspace(0,3),linspace(-2,2));
-N = size(data,2);           % get the size of the data
-
+N = size(data,2);          
 
 Z_2_norm = zeros(size(X));
 for i=1:size(X,1)
@@ -60,22 +60,15 @@ for i=1:size(X,1)
    end
 end
 
-figure
+figure('Name', 'Objective function with the squared 2 norm')
 mesh(X,Y,Z_2_norm)
 
-
-
-
-%% Huber norm for a)
+%% Huber norm implemented as suggested by the paper
 
 % initialize variables
 r = 1;          % radius of circle
 mu = 10;         % weight of 2 norm
 lambda = 1;     % weight of 1 norm
-
-
-
-% import casadi.*
 
 opti = casadi.Opti();       % initializing optimazation problem
 
@@ -84,23 +77,15 @@ opti = casadi.Opti();       % initializing optimazation problem
 data = [1   2-(sqrt(2)/2)   2   2.5   2;            % pertubed data
         0   sqrt(2)/2       1   0   -1];
 
-N = size(data,2);           % get the size of the data
-
+N = size(data,2);
 
 p = opti.variable(2,1);     % contains the x,y center we want to calculate
-v = opti.variable(N,1);
-w = opti.variable(N,1);
+v = opti.variable(N,1);     % part of the error of which we will take the 1 norm
+w = opti.variable(N,1);     % part of the error of which we will take the squared 2 norm
 
-s = opti.variable(N,1);     % the slack variable we want to use, cause 1 norm cannot be used in casadi
+s = opti.variable(N,1);     % slack variable to determine the absolute values needed for the 1 norm
 
-e = sqrt(sum((data-repmat(p,1,N)).^2,1))'-r;        % the distance we want to minimize
-
-%e1 = lambda*e;                                      % the weighted 1 norm
-%e2 = mu*(e'*e);                                     % the weighted 2 norm
-
-%opti.subject_to(-s<=e1<=s);                         % formation of the 1 norm using slack variable
-
-%opti.minimize(sum(s)+e2);                           % minimize the slack variable (1 norm) + 2 norm
+e = sqrt(sum((data-repmat(p,1,N)).^2,1))'-r;         % the distance we want to minimize
 
 norm1 = sum(s);
 norm2 = sum(w.^2);
@@ -116,38 +101,43 @@ opti.solver('ipopt');
 
 sol = opti.solve();
 
-figure()                            % plot the solution
+figure('Name', 'Fitted circle using the Huber norm')  % plot the solution
 hold on
 plot(data(1,:),data(2,:),'o')
 arc = 0:0.01:2*pi;
 circle = plot(sol.value(p(1))+r*cos(arc), sol.value(p(2))+r*sin(arc),'r');
 axis equal
 
-
+% plotting mesh with Huber norm
 [X,Y] = meshgrid(linspace(0,3),linspace(-2,2));
 
-
-Z_H_norm= zeros(size(X));
-for i=1:size(X,1)
-   for j=1:size(X,2)
-      pnum = [X(i,j);Y(i,j)];
-      e = sqrt(sum((data-repmat(pnum,1,N)).^2,1))'-r;
-      Z_H_norm(i,j) = lambda*norm(e,1)+mu*norm(e,2); 
-   end
+Z_H_norm = zeros(size(X));
+for i=1:size(Z_H_norm,1)
+    for j=1:size(Z_H_norm,2)
+        for k = 1:size(data,2)
+            error = sqrt(sum((data(:,k)-[X(i,j); Y(i,j)]).^2,1))'-r;
+            one_norm = abs(error);
+            if one_norm >= lambda/(2*mu)
+                Z_H_norm(i,j) = Z_H_norm(i,j) + lambda*(one_norm-lambda/(4*mu));
+            else
+                Z_H_norm(i,j) = Z_H_norm(i,j) + mu*error^2;
+            end
+        end
+    end
 end
 
-figure
+figure('Name', 'Objective function with the Huber norm')
 mesh(X,Y,Z_H_norm)
 
 
 %% Comparison 2 norm with Huber norm
 
-figure()                            % plot the solution
+figure('Name', 'Comparison solution Huber and squared 2 norm')
 hold on
 plot(data(1,:),data(2,:),'o')       % data points
 
-th = linspace(0,2*pi,100);          % begin, einde, aantal punten
-plot(r*cos(th) + px, r*sin(th) + py,'g')                % 2 norm
+th = linspace(0,2*pi,100);          
+plot(r*cos(th) + px, r*sin(th) + py,'g') % 2 norm
 
 arc = 0:0.01:2*pi;
 circle = plot(sol.value(p(1))+r*cos(arc), sol.value(p(2))+r*sin(arc),'r');  % Huber norm
@@ -156,122 +146,10 @@ hold off
 legend('data','2 norm', 'Huber norm');
 axis equal
 
-
-figure()
+figure('Name', 'Comparison cost functions Huber and squared 2 norm')
 mesh(X,Y,Z_2_norm)
 hold on
 mesh(X,Y,Z_H_norm)
 hold off
 legend('mesh 2 norm','mesh H norm')
 
-
-
-%% old code of Huber norm
-
-% % gradually building the cost function (2 norm) 
-% var = 0;
-% mu = 2;
-% lambda = 1;
-% 
-% for index=1:1:5
-%     z_vector = [(x - data(1,index))  (y - data(2,index))];
-%     norm_1 = sum(abs(z_vector));
-%     norm_2 = sqrt(sum(z_vector.^2));
-%     
-%     threshold = lambda/(2*mu);
-%     logical = (sign(norm_1 - threshold) + 1)/2;
-%     
-%     logical_inv = (sign(threshold - norm_1) + 1)/2;
-%     
-%     % for 1 norm
-%     var = var + logical * lambda*(norm_1 - lambda/(4*mu)); 
-%     % for 2 norm   
-%     var = var + logical_inv * mu*(norm_2);
-%         
-% end
-% 
-% % searching solution
-% opti.minimize (var);
-% %opti.subject_to (x^2+y ^2 <=1)
-% %opti.subject_to (x+y >=0)
-% opti.solver ('ipopt');
-% sol = opti.solve();
-% px = sol.value (x)
-% py = sol.value (y)
-% 
-% 
-% % plotting solution
-% r = 1;
-% 
-% 
-% % second attempt at plot
-% 
-% figure()
-% plot(data(1,:),data(2,:))
-% 
-% hold on
-% th = linspace(0,2*pi,100);          % begin, einde, aantal punten
-% plot(r*cos(th) + px, r*sin(th) + py)
-% hold off
-% 
-% 
-
-%% copied code from ex_fit2.m
-% 
-% % double pendulum with a fixed base
-% 
-% clear all;
-% close all;
-% clc;
-% 
-% opti = casadi.Opti();
-% 
-% r = 1;
-% 
-% data = [1 0; 2-sqrt(2)/2 sqrt(2)/2; 2 1; 3 0; 2 -1]';
-% data = [1 0; 2-sqrt(2)/2 sqrt(2)/2; 2 1; 2.5 0; 2 -1]';
-% N = size(data,2);
-% 
-% p = opti.variable(2,1);
-% 
-% s = opti.variable(N,1);
-% 
-% e = sqrt(sum((data-repmat(p,1,N)).^2,1))'-r;
-% 
-% opti.subject_to(-s<=e<=s);
-% 
-% opti.minimize(sum(s));
-% 
-% opti.set_initial(p, [1.5;0.5]);
-% 
-% opti.solver('ipopt');
-% 
-% sol = opti.solve();
-% 
-% figure()
-% hold on
-% plot(data(1,:),data(2,:),'o')
-% arc = 0:0.01:2*pi;
-% circle = plot(sol.value(p(1))+r*cos(arc), sol.value(p(2))+r*sin(arc),'r');
-% axis equal
-% 
-% % % %
-% 
-% [X,Y] = meshgrid(linspace(0,3),linspace(-2,2));
-% 
-% 
-% Z = zeros(size(X));
-% for i=1:size(X,1)
-%    for j=1:size(X,2)
-%       pnum = [X(i,j);Y(i,j)];
-%       e = sqrt(sum((data-repmat(pnum,1,N)).^2,1))'-r;
-%       Z(i,j) = norm(e,1); 
-%    end
-% end
-% 
-% figure
-% mesh(X,Y,Z)
-% view([38,10])
-% 
-% xlabel('x')
-% ylabel('y')

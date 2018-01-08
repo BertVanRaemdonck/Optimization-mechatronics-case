@@ -71,8 +71,8 @@ opti.subject_to(T >= 0);
 opti.subject_to({x(1)==x_init(1), x(end)==x_final(1), y(1)==x_init(2), y(end)==x_final(2)});
 opti.subject_to({dx(1)==x_init(3), dx(end)==x_final(3), dy(1)==x_init(4), dy(end)==x_final(4)});
 
-% for moving object
-for index=1:N       % loop over entire time
+%for moving obstacle avoidance constraints
+for index=1:N       % loop over entire trajectory
     opti.subject_to((x(index)-obs_pos_moving(index,1)).^2 + (y(index)-obs_pos_moving(index,2)).^2 >= obs_rad_moving^2);
 end
 
@@ -109,9 +109,7 @@ fig = figure('Name', 'Trajectory animation');
 axis tight manual
 
 filename = 'animation_b1.gif';
-%set(gca,'nextplot','replacechildren','visible','off')
-% to make sure the car does not clip the circle
-radius_bol = 0.0;
+radius_bol = 0.0; % radius of the circle around the car that can't touch the obstacle (only for visualization)
 
 for index = 1:N
     plot(posx_opt(index),posy_opt(index),'b*')
