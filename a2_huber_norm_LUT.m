@@ -15,11 +15,8 @@ lambda = 1;
 mu = 10;
 
 data = [1 0; 2-sqrt(2)/2 sqrt(2)/2; 2 1;2.5 0; 2 -1]';
-N = size(data,2);
 
 p = opti.variable(2,1);
-
-%e = sqrt(sum((data-repmat(p,1,N)).^2,1))'-r;
 
 % create a huber norm lookup table
 N = 200; % amount of interpolation points in a direction

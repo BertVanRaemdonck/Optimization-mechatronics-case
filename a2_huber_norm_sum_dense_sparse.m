@@ -70,7 +70,7 @@ mesh(X,Y,Z_2_norm)
 
 % initialize variables
 r = 1;          % radius of circle
-mu = 1;         % weight of 2 norm
+mu = 10;         % weight of 2 norm
 lambda = 1;     % weight of 1 norm
 
 
@@ -88,17 +88,27 @@ N = size(data,2);           % get the size of the data
 
 
 p = opti.variable(2,1);     % contains the x,y center we want to calculate
+v = opti.variable(N,1);
+w = opti.variable(N,1);
 
 s = opti.variable(N,1);     % the slack variable we want to use, cause 1 norm cannot be used in casadi
 
 e = sqrt(sum((data-repmat(p,1,N)).^2,1))'-r;        % the distance we want to minimize
 
-e1 = lambda*e;                                      % the weighted 1 norm
-e2 = mu*(e'*e);                                     % the weighted 2 norm
+%e1 = lambda*e;                                      % the weighted 1 norm
+%e2 = mu*(e'*e);                                     % the weighted 2 norm
 
-opti.subject_to(-s<=e1<=s);                         % formation of the 1 norm using slack variable
+%opti.subject_to(-s<=e1<=s);                         % formation of the 1 norm using slack variable
 
-opti.minimize(sum(s)+e2);                           % minimize the slack variable (1 norm) + 2 norm
+%opti.minimize(sum(s)+e2);                           % minimize the slack variable (1 norm) + 2 norm
+
+norm1 = sum(s);
+norm2 = sum(w.^2);
+
+opti.minimize( lambda*norm1 + mu*norm2 );
+opti.subject_to( v + w == e);
+opti.subject_to( s >= v );
+opti.subject_to( s >= -v );
 
 opti.set_initial(p, [1.5;0.5]);                     % set the initial guess
 

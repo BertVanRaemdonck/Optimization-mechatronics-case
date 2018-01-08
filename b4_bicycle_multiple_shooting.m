@@ -1,4 +1,4 @@
-% Car A-->B multiple shooting
+% Bicycle A-->B multiple shooting
 
 clear all
 close all
