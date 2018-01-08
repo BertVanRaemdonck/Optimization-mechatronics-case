@@ -19,6 +19,7 @@ function area = calculate_connecting_area(points, X)
 %           function automatically returns the area of the polygon.
 
     if nargin < 2
+        % return the area of the given polygon
         X = points(:,1);
     end
 
@@ -27,8 +28,8 @@ function area = calculate_connecting_area(points, X)
     
     for i=1:nb_points
         point_1 = points(:,i);
-        point_2 = points(:,mod(i,nb_points)+1); % always gives the next point in the list, except for when i is the lest element in the list: then it returns the first one
-        area = area + .5 * abs((X(1,:)-point_2(1)).*(point_1(2)-X(2,:)) - (X(1,:)-point_1(1)).*(point_2(2)-X(2,:)));
+        point_2 = points(:,mod(i,nb_points)+1); % always gives the next point in the list, except for when i is the last element in the list: then it returns the first one
+        area = area + .5 * abs((X(1,:)-point_2(1)).*(point_1(2)-X(2,:)) - (X(1,:)-point_1(1)).*(point_2(2)-X(2,:)));    % add the area of the triangle that is formed by the newest selected three points
     end
     
 end
