@@ -87,7 +87,7 @@ tgrid = linspace(0,T_opt, N+1);
 
 % plot the found solution
 figure;
-subplot(3,1,1)
+subplot(4,1,1)
 % plot the found positions
 hold on
 plot(tgrid, posx_opt, 'b-x')
@@ -96,7 +96,7 @@ xlabel('time [s]')
 ylabel('position [m]')
 title('State trajectories without aerodynamic drag')
 
-subplot(3,1,2)
+subplot(4,1,2)
 % plot the found velocities
 hold on
 plot(tgrid, velx_opt, 'b-x')
@@ -104,13 +104,21 @@ plot(tgrid, vely_opt, 'r-o')
 xlabel('time [s]')
 ylabel('velocity [m/s]')
 
-subplot(3,1,3)
+subplot(4,1,3)
 % plot the found accelerations
+hold on
+stairs(tgrid(1:end-1), accx_opt, 'b-x')
+stairs(tgrid(1:end-1), accy_opt, 'r-o')
+xlabel('time [s]')
+ylabel('acceleration [m/s^2]')
+
+subplot(4,1,4)
+% plot the force the vehicle has to use
 hold on
 stairs(tgrid(1:end-1), m*accx_opt, 'b-x')
 stairs(tgrid(1:end-1), m*accy_opt, 'r-o')
 xlabel('time [s]')
-ylabel('acceleration [m/s^2]')
+ylabel('force [N]')
 
 
 % plot the top down view of the trajectory
@@ -176,7 +184,7 @@ for k=1:N
 end
 
 % path constraint
-c = 50;                  % aerodynamic drag coefficient
+c = 250;                  % aerodynamic drag coefficient
 
 
 opti.subject_to(v_min <= dx <= v_max);
@@ -215,7 +223,7 @@ tgrid = linspace(0,T_opt, N+1);
 
 figure;
 
-subplot(3,1,1)
+subplot(4,1,1)
 % plot the found positions
 hold on
 plot(tgrid, posx_opt, 'b-x')
@@ -224,7 +232,7 @@ xlabel('time [s]')
 ylabel('position [m]')
 title('State trajectories WITH aerodynamic drag')
 
-subplot(3,1,2)
+subplot(4,1,2)
 % plot the found velocities
 hold on
 plot(tgrid, velx_opt, 'b-x')
@@ -232,13 +240,21 @@ plot(tgrid, vely_opt, 'r-o')
 xlabel('time [s]')
 ylabel('velocity [m/s]')
 
-subplot(3,1,3)
+subplot(4,1,3)
 % plot the found accelerations
 hold on
-stairs(tgrid(1:end-1), m*accx_opt, 'b-x')
-stairs(tgrid(1:end-1), m*accy_opt, 'r-o')
+stairs(tgrid(1:end-1), accx_opt, 'b-x')
+stairs(tgrid(1:end-1), accy_opt, 'r-o')
 xlabel('time [s]')
 ylabel('acceleration [m/s^2]')
+
+subplot(4,1,4)
+% plot the force the vehicle has to use
+hold on
+stairs(tgrid(1:end-1), m*accx_opt + c*(velx_opt(1:end-1)).^2, 'b-x')
+stairs(tgrid(1:end-1), m*accy_opt + c*(vely_opt(1:end-1)).^2, 'r-o')
+xlabel('time [s]')
+ylabel('force [N]')
 
 
 % plot the top down view of the trajectory
